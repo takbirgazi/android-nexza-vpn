@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "com.nexzatech.nexzavpn"
         minSdk 24
-        targetSdk 37
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -47,5 +47,6 @@ dependencies {
     androidTestImplementation libs.ext.junit
 
     implementation 'ai.bongotech:bongovpn:1.0.3'
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 }
