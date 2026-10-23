@@ -1,10 +1,12 @@
 package com.nexzatech.nexzavpn;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout powerButton;
     TextView tvConnectHint, tvStatus, tvStatusMessage, tvDownload, tvUpload, tvInfo, tvTotalUpload, tvTotalDownload;
     Boolean isConnected = false;
+    LinearLayout autoSelect;
     BongoVpn bongoVpn = new BongoVpn(this);
 
     @Override
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         tvUpload = findViewById(R.id.tvUpload);
         tvTotalDownload =findViewById(R.id.tvTotalDownload);
         tvTotalUpload =  findViewById(R.id. tvTotalUpload);
+        autoSelect = findViewById(R.id.autoSelect);
 
 
         if(!(bongoVpn.hasNotificationPermission())){
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         bongoVpn.attachFromString(config, username, password);
 
+        // VPN Start Button
         powerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,6 +72,14 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     connectVpn();
                 }
+            }
+        });
+
+        // Auto Select Button
+        autoSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               startActivity(new Intent(MainActivity.this, ServerList.class));
             }
         });
 
@@ -139,16 +152,6 @@ public class MainActivity extends AppCompatActivity {
                 .targetActivity(MainActivity.class)
                 .smallIcon(R.drawable.ic_power)
                 .title("Nexza VPN");
-
-
-
-
-
-
-
-
-
-
     }
 
     // ===== Connect VPN Method Start =====
