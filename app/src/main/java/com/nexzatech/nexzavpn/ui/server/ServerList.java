@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -33,6 +34,8 @@ public class ServerList extends AppCompatActivity {
     private ListView serverList;
     private ImageView btnBack;
     private EditText etSearch;
+    private ProgressBar progressBar;
+    private boolean isLoading = false;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
 
     private Runnable searchRunnable;
@@ -73,71 +76,58 @@ public class ServerList extends AppCompatActivity {
         serverList = findViewById(R.id.serverList);
         btnBack = findViewById(R.id.btnBack);
         etSearch = findViewById(R.id.etSearch);
+        progressBar = findViewById(R.id.progressBar);
 
         // Back button
         btnBack.setOnClickListener(v -> finish());
 
         // Initialize Adapter
-        serverAdapter = new ServerAdapter(
-                ServerList.this,
-                servers
-        );
-
-        serverList.setAdapter(serverAdapter);
-
-        // Load servers from API
         serverAdapter = new ServerAdapter(this, servers);
         serverList.setAdapter(serverAdapter);
 
-        loadServers("");
+        // Setup search
         setupSearch();
+
+        // Load default servers
+        loadServers("");
     }
 
-    private void loadServers() {
+    private void loadServers(String search) {
+
+        showLoading();
 
         ServerRepository repository = new ServerRepository();
 
         new Thread(() -> {
-
             try {
 
                 JSONArray serverArray = repository.getServers(
                         1,
                         10,
-                        ""
+                        search
                 );
 
                 List<Server> apiServers = new ArrayList<>();
 
-                // Convert JSON Array to Server Model
                 for (int i = 0; i < serverArray.length(); i++) {
 
                     JSONObject object = serverArray.getJSONObject(i);
 
-                    String id = object.getString("id");
-
-                    String name = object.getString("name");
-
-                    String country = object.getString("country");
-
                     Server server = new Server(
-                            id,
-                            name,
-                            country
+                            object.getString("id"),
+                            object.getString("name"),
+                            object.getString("country")
                     );
 
                     apiServers.add(server);
                 }
 
-                // Update UI on Main Thread
                 runOnUiThread(() -> {
-
                     servers.clear();
-
                     servers.addAll(apiServers);
-
                     serverAdapter.notifyDataSetChanged();
 
+                    hideLoading();
                 });
 
             } catch (Exception e) {
@@ -145,23 +135,22 @@ public class ServerList extends AppCompatActivity {
                 e.printStackTrace();
 
                 runOnUiThread(() -> {
+                    hideLoading();
 
                     Toast.makeText(
                             ServerList.this,
                             "Failed to load servers",
                             Toast.LENGTH_SHORT
                     ).show();
-
                 });
-            }
 
+            }
         }).start();
     }
 
 
 
     private void setupSearch() {
-
         etSearch.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -198,53 +187,18 @@ public class ServerList extends AppCompatActivity {
         });
     }
 
-    private void loadServers(String search) {
-
-        ServerRepository repository = new ServerRepository();
-
-        new Thread(() -> {
-            try {
-
-                JSONArray serverArray = repository.getServers(
-                        1,
-                        10,
-                        search
-                );
-
-                List<Server> apiServers = new ArrayList<>();
-
-                for (int i = 0; i < serverArray.length(); i++) {
-
-                    JSONObject object = serverArray.getJSONObject(i);
-
-                    Server server = new Server(
-                            object.getString("id"),
-                            object.getString("name"),
-                            object.getString("country")
-                    );
-
-                    apiServers.add(server);
-                }
-
-                runOnUiThread(() -> {
-                    servers.clear();
-                    servers.addAll(apiServers);
-                    serverAdapter.notifyDataSetChanged();
-                });
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                ServerList.this,
-                                "Failed to load servers",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
-            }
-
-        }).start();
+    private void showLoading() {
+        isLoading = true;
+        progressBar.setVisibility(View.VISIBLE);
     }
+
+    private void hideLoading() {
+        isLoading = false;
+        progressBar.setVisibility(View.GONE);
+    }
+
+
+
+
+    // END
 }
