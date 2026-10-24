@@ -1,5 +1,6 @@
 package com.nexzatech.nexzavpn.ui.server;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,7 +22,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.nexzatech.nexzavpn.R;
 import com.nexzatech.nexzavpn.adapter.ServerAdapter;
 import com.nexzatech.nexzavpn.data.model.Server;
+import com.nexzatech.nexzavpn.data.preferences.ServerPreferences;
 import com.nexzatech.nexzavpn.data.repository.ServerRepository;
+import com.nexzatech.nexzavpn.ui.main.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -84,6 +87,24 @@ public class ServerList extends AppCompatActivity {
         // Initialize Adapter
         serverAdapter = new ServerAdapter(this, servers);
         serverList.setAdapter(serverAdapter);
+
+        serverList.setOnItemClickListener((parent, view, position, id) -> {
+
+            Server selectedServer = servers.get(position);
+
+            String selectedServerId = selectedServer.getId();
+
+            // Save selected server ID
+            ServerPreferences preferences = new ServerPreferences(this);
+            preferences.saveSelectedServerId(selectedServerId);
+
+            // Send selected server ID to MainActivity
+            Intent intent = new Intent(ServerList.this, MainActivity.class);
+            intent.putExtra("selected_server_id", selectedServerId);
+
+            startActivity(intent);
+            finish();
+        });
 
         // Setup search
         setupSearch();

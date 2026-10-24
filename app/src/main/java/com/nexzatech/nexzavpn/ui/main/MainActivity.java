@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.nexzatech.nexzavpn.R;
+import com.nexzatech.nexzavpn.data.preferences.ServerPreferences;
 import com.nexzatech.nexzavpn.data.repository.ServerRepository;
 import com.nexzatech.nexzavpn.ui.server.ServerList;
 
@@ -95,8 +96,24 @@ public class MainActivity extends AppCompatActivity {
         // Setup click listeners.
         setupClickListeners();
 
-        // Load server configuration.
-        loadServer("1");
+        ServerPreferences preferences = new ServerPreferences(this);
+
+        // Get ID from Intent first
+        String selectedServerId = getIntent().getStringExtra(
+                "selected_server_id"
+        );
+
+        // If Intent does not contain ID, use saved ID
+        if (selectedServerId == null) {
+            selectedServerId = preferences.getSelectedServerId();
+        }
+
+        if (selectedServerId != null) {
+            loadServer(selectedServerId);
+        } else {
+            // Load server configuration.
+            loadServer("1");
+        }
     }
 
     private void initializeViews() {
